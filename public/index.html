@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Temple Election Voting System</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🗳️ Temple Election System</h1>
+            <p>Vote for 13 members from available nominations</p>
+        </header>
+
+        <div class="tabs">
+            <button class="tab-btn active" onclick="showTab('voting')">Voting</button>
+            <button class="tab-btn" onclick="showTab('admin')">Admin Panel</button>
+            <button class="tab-btn" onclick="showTab('results')">Results</button>
+        </div>
+
+        <!-- VOTING TAB -->
+        <div id="voting" class="tab-content active">
+            <div class="voting-container">
+                <div class="phase-1" id="phase1">
+                    <h2>Enter Your PIN</h2>
+                    <p>Please enter your 6-digit PIN to start voting</p>
+                    <input type="text" id="pinInput" placeholder="000000" maxlength="6" class="pin-input">
+                    <button onclick="verifyPIN()" class="btn btn-primary">Start Voting</button>
+                    <div id="pinError" class="error-msg"></div>
+                </div>
+
+                <div class="phase-2 hidden" id="phase2">
+                    <h2>Select Your Candidates</h2>
+                    <p id="voterName" class="voter-name"></p>
+                    <p class="instruction">Select up to 13 candidates</p>
+                    <div id="candidatesList" class="candidates-list"></div>
+                    <div class="vote-count">Selected: <span id="selectedCount">0</span>/13</div>
+                    <button onclick="submitVote()" class="btn btn-success">Submit Vote</button>
+                    <button onclick="cancelVote()" class="btn btn-secondary">Cancel</button>
+                    <div id="voteError" class="error-msg"></div>
+                </div>
+
+                <div class="phase-3 hidden" id="phase3">
+                    <h2>✓ Vote Submitted Successfully!</h2>
+                    <p>Thank you for voting. Please ask the administrator for the next voter.</p>
+                    <button onclick="resetVoting()" class="btn btn-primary">Next Voter</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ADMIN TAB -->
+        <div id="admin" class="tab-content">
+            <div class="admin-container">
+                <div class="admin-login" id="adminLogin">
+                    <h2>Admin Login</h2>
+                    <input type="password" id="adminPassword" placeholder="Enter admin password" class="input">
+                    <button onclick="adminLogin()" class="btn btn-primary">Login</button>
+                    <div id="adminLoginError" class="error-msg"></div>
+                </div>
+
+                <div class="admin-panel hidden" id="adminPanel">
+                    <h3>Admin Dashboard</h3>
+
+                    <!-- Stats -->
+                    <div class="stats-box">
+                        <div class="stat-item">
+                            <div class="stat-label">Total Members</div>
+                            <div class="stat-value" id="statTotalMembers">-</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-label">Members Voted</div>
+                            <div class="stat-value" id="statMembersVoted">-</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-label">Voting %</div>
+                            <div class="stat-value" id="statVotingPercent">-</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-label">Total Nominations</div>
+                            <div class="stat-value" id="statTotalNominations">-</div>
+                        </div>
+                    </div>
+
+                    <hr>
+
+                    <!-- Upload Members -->
+                    <div class="admin-section">
+                        <h4>Step 1: Upload Member List</h4>
+                        <p>Upload a CSV file with member names</p>
+                        <textarea id="csvInput" placeholder="Paste CSV data here:\nName,Email\nJohn Smith,john@example.com\nMary Johnson,mary@example.com" class="textarea" rows="6"></textarea>
+                        <button onclick="uploadMembers()" class="btn btn-primary">Upload Members</button>
+                        <div id="uploadMsg" class="success-msg"></div>
+                    </div>
+
+                    <hr>
+
+                    <!-- Download PIN Template -->
+                    <div class="admin-section">
+                        <h4>Download Member PINs</h4>
+                        <p>Download a list of members with their PINs for printing</p>
+                        <button onclick="exportPINs()" class="btn btn-info">📥 Download PINs (CSV)</button>
+                    </div>
+
+                    <hr>
+
+                    <!-- Add Nominations -->
+                    <div class="admin-section">
+                        <h4>Step 2: Add Nominations</h4>
+                        <p>Enter candidate names (one per line, need at least 13)</p>
+                        <textarea id="nominationsInput" placeholder="John Smith\nMary Johnson\nRaj Patel\n..." class="textarea" rows="8"></textarea>
+                        <button onclick="addNominations()" class="btn btn-primary">Add Nominations</button>
+                        <div id="nominationsMsg" class="success-msg"></div>
+                    </div>
+
+                    <hr>
+
+                    <!-- Clear Votes -->
+                    <div class="admin-section">
+                        <h4>New Election</h4>
+                        <p>Clear all votes to run a new election</p>
+                        <button onclick="clearVotes()" class="btn btn-danger">🔄 Clear All Votes</button>
+                        <div id="clearMsg" class="success-msg"></div>
+                    </div>
+
+                    <hr>
+
+                    <button onclick="adminLogout()" class="btn btn-secondary">Logout</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- RESULTS TAB -->
+        <div id="results" class="tab-content">
+            <div class="results-container">
+                <div class="results-login" id="resultsLogin">
+                    <h2>View Results (Admin Only)</h2>
+                    <input type="password" id="resultsPassword" placeholder="Enter admin password" class="input">
+                    <button onclick="viewResults()" class="btn btn-primary">View Results</button>
+                    <div id="resultsLoginError" class="error-msg"></div>
+                </div>
+
+                <div class="results-panel hidden" id="resultsPanel">
+                    <h3>Election Results</h3>
+
+                    <div class="results-info">
+                        <p><strong>Total Members:</strong> <span id="resultsTotalMembers">-</span></p>
+                        <p><strong>Total Votes Cast:</strong> <span id="resultsTotalVotes">-</span></p>
+                        <p><strong>Election Date:</strong> <span id="resultsDate"></span></p>
+                    </div>
+
+                    <h4>📊 Results (Ranked by Votes)</h4>
+                    <div id="resultsList" class="results-list"></div>
+
+                    <div class="export-buttons">
+                        <button onclick="exportResultsCSV()" class="btn btn-info">📥 Export as CSV</button>
+                        <button onclick="exportResultsTXT()" class="btn btn-info">📥 Export as TXT</button>
+                    </div>
+
+                    <button onclick="resultsLogout()" class="btn btn-secondary">Close Results</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
